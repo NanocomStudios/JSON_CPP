@@ -4,6 +4,9 @@
 using namespace std;
 #include "jsoncpp.h"
 
+#define toStr(x) (*(string*)(x))
+#define toMap(x) (*(unordered_map<string,JsonObject*>*)(x))
+
 typedef enum JsonObjectType{STRING,MAP} JsonObjectType;
 
 struct JsonObject{
@@ -18,18 +21,15 @@ struct MapObject{
 };
 
 int main(){
-    string test = "{test:2,gt:{1:{2:3}}}";
+    string test = "{test:2,gt:{1:{2:hello},4:gta},abc:def}";
     
     stack<MapObject*> mapOpbectStack;
 
     bool isValue = false;
     bool isString = false;
 
-    MapObject* currentMapObject = new MapObject;
+    MapObject* currentMapObject = NULL;
     unordered_map<string,JsonObject*>* currentMap = new unordered_map<string,JsonObject*>;
-
-    currentMapObject->key = "";
-    currentMapObject->value = NULL;
 
     for(char x : test){
         switch (x)
@@ -39,18 +39,24 @@ int main(){
                 cout << "Error: Unexpected '{'" << endl;
                 break;
             }
-            currentMapObject->value = new JsonObject;
-            currentMapObject->value->type = MAP;
-            currentMapObject->value->value = new unordered_map<string,JsonObject*>;
-            currentMapObject->parentMap = currentMap;
 
-            currentMap = (unordered_map<string,JsonObject*>*)currentMapObject->value->value;
-            mapOpbectStack.push(currentMapObject);
-
-            currentMapObject = new MapObject;
-            isValue = false;
-            currentMapObject->key = "";
-
+            if(currentMapObject == NULL){
+                currentMapObject = new MapObject;
+                currentMapObject->key = "";
+                currentMapObject->parentMap = currentMap;
+            }else{
+                currentMapObject->value = new JsonObject;
+                currentMapObject->value->type = MAP;
+                currentMapObject->value->value = new unordered_map<string,JsonObject*>;
+                currentMapObject->parentMap = currentMap;
+    
+                currentMap = (unordered_map<string,JsonObject*>*)currentMapObject->value->value;
+                mapOpbectStack.push(currentMapObject);
+    
+                currentMapObject = new MapObject;
+                isValue = false;
+                currentMapObject->key = "";
+            }
             break;
 
         case ':':
@@ -61,13 +67,16 @@ int main(){
         case ',':
             currentMap->insert({currentMapObject->key,currentMapObject->value});
 
-            cout << "inserted " << *(string*)currentMapObject->value->value << endl;
+            cout << "inserted " << currentMapObject->value << endl;
 
             currentMapObject = new MapObject;
             currentMapObject->key = "";
+            currentMapObject->parentMap = currentMap;
+
             isValue = false;
             isString = false;
             break;
+
         case '}':
             if(!mapOpbectStack.empty()){
                 currentMap->insert({currentMapObject->key,currentMapObject->value});
@@ -78,8 +87,11 @@ int main(){
                 currentMap = currentMapObject->parentMap;
                 isValue = false;
                 isString = false;
+            }else{
+                currentMap->insert({currentMapObject->key,currentMapObject->value});
             }
             break;
+
         default:
             
             if(!isValue){
@@ -91,6 +103,7 @@ int main(){
                     currentMapObject->value = new JsonObject;
                     currentMapObject->value->type = STRING;
                     currentMapObject->value->value = new string;
+                    cout << "value started " << currentMapObject->value->value << endl;
                     isString = true;
                 }
                 ((string*)currentMapObject->value->value)->push_back(x);
@@ -98,4 +111,12 @@ int main(){
             break;
         }
     }
+    
+    cout << toStr((currentMap->at("test"))->value) << endl;
+
+    cout << toStr(toMap(toMap(currentMap->at("gt")->value).at("1")->value).at("2")->value) << endl;
+
+    cout << toStr(toMap(currentMap->at("gt")->value).at("4")->value) << endl;
+
+    cout << toStr((currentMap->at("abc"))->value) << endl;
 }

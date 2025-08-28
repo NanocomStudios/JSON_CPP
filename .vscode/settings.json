@@ -4,6 +4,12 @@
         "xstring": "cpp",
         "unordered_map": "cpp",
         "stack": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "type_traits": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp",
+        "iostream": "cpp",
+        "system_error": "cpp",
+        "ostream": "cpp"
     }
 }
