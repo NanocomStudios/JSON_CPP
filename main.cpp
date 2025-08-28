@@ -1,11 +1,11 @@
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include <stack>
 using namespace std;
 #include "jsoncpp.h"
 
 #define toStr(x) (*(string*)(x))
-#define toMap(x) (*(unordered_map<string,JsonObject*>*)(x))
+#define toMap(x) (*(map<string,JsonObject*>*)(x))
 
 typedef enum JsonObjectType{STRING,MAP} JsonObjectType;
 
@@ -17,11 +17,11 @@ struct JsonObject{
 struct MapObject{
     string key;
     JsonObject* value;
-    unordered_map<string,JsonObject*>* parentMap;
+    map<string,JsonObject*>* parentMap;
 };
 
 int main(){
-    string test = "{test:2,gt:{1:{2:hello},4:gta},abc:def}";
+    string test = "{test:2,gt:{1:{1:hello,2:test2,3:test3,4:test4},4:gta},abc:def}";
     
     stack<MapObject*> mapOpbectStack;
 
@@ -29,7 +29,7 @@ int main(){
     bool isString = false;
 
     MapObject* currentMapObject = NULL;
-    unordered_map<string,JsonObject*>* currentMap = new unordered_map<string,JsonObject*>;
+    map<string,JsonObject*>* currentMap = new map<string,JsonObject*>;
 
     for(char x : test){
         switch (x)
@@ -47,10 +47,10 @@ int main(){
             }else{
                 currentMapObject->value = new JsonObject;
                 currentMapObject->value->type = MAP;
-                currentMapObject->value->value = new unordered_map<string,JsonObject*>;
+                currentMapObject->value->value = new map<string,JsonObject*>;
                 currentMapObject->parentMap = currentMap;
     
-                currentMap = (unordered_map<string,JsonObject*>*)currentMapObject->value->value;
+                currentMap = (map<string,JsonObject*>*)currentMapObject->value->value;
                 mapOpbectStack.push(currentMapObject);
     
                 currentMapObject = new MapObject;
@@ -119,4 +119,8 @@ int main(){
     cout << toStr(toMap(currentMap->at("gt")->value).at("4")->value) << endl;
 
     cout << toStr((currentMap->at("abc"))->value) << endl;
+
+    for(auto i : toMap(toMap(currentMap->at("gt")->value).at("1")->value)){
+        cout << i.first << " : " << toStr(i.second->value) << endl;
+    }
 }
