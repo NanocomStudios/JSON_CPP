@@ -10,6 +10,7 @@
         "xutility": "cpp",
         "iostream": "cpp",
         "system_error": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "map": "cpp"
     }
 }
